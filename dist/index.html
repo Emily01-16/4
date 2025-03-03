@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>遊戲</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>貪食蛇遊戲</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        #game-container {
+            text-align: center;
+        }
+        #game-board {
+            border: 2px solid #333;
+            background-color: #fff;
+        }
+        #score {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        #start-btn {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="score">分數: 0</div>
+        <canvas id="game-board" width="400" height="400"></canvas>
+        <button id="start-btn">開始遊戲</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('game-board');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const startBtn = document.getElementById('start-btn');
+
+        // 遊戲設定
+        const gridSize = 20;
+        const tileCount = canvas.width / gridSize;
+        let snake = [];
+        let food = {};
+        let dx = gridSize;
+        let dy = 0;
+        let score = 0;
+        let gameLoop;
+
+        // 初始化蛇
+        function initSnake() {
+            snake = [
+                {x: gridSize * 5, y: gridSize * 5},
+                {x: gridSize * 4, y: gridSize * 5},
+                {x: gridSize * 3, y: gridSize * 5}
+            ];
+        }
+
+        // 生成食物
+        function generateFood() {
+            food = {
+                x: Math.floor(Math.random() * tileCount) * gridSize,
+                y: Math.floor(Math.random() * tileCount) * gridSize
+            };
+        }
+
+        // 繪製遊戲元素
+        function drawGame() {
+            // 清除畫布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 繪製蛇
+            ctx.fillStyle = 'green';
+            snake.forEach(segment => {
+                ctx.fillRect(segment.x, segment.y, gridSize - 2, gridSize - 2);
+            });
+
+            // 繪製食物
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food.x, food.y, gridSize - 2, gridSize - 2);
+        }
+
+        // 移動蛇
+        function moveSnake() {
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+            snake.unshift(head);
+
+            // 檢查是否吃到食物
+            if (head.x === food.x && head.y === food.y) {
+                score++;
+                scoreElement.textContent = `分數: ${score}`;
+                generateFood();
+            } else {
+                snake.pop();
+            }
+        }
+
+        // 碰撞檢測
+        function checkCollision() {
+            const head = snake[0];
+
+            // 牆壁碰撞
+            if (head.x < 0 || head.x >= canvas.width || 
+                head.y < 0 || head.y >= canvas.height) {
+                endGame();
+            }
+
+            // 自身碰撞
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    endGame();
+                }
+            }
+        }
+
+        // 遊戲循環
+        function gameUpdate() {
+            moveSnake();
+            checkCollision();
+            drawGame();
+        }
+
+        // 結束遊戲
+        function endGame() {
+            clearInterval(gameLoop);
+            alert(`遊戲結束！您的分數是 ${score}`);
+            startBtn.disabled = false;
+        }
+
+        // 鍵盤控制
+        function changeDirection(event) {
+            const LEFT_KEY = 37;
+            const RIGHT_KEY = 39;
+            const UP_KEY = 38;
+            const DOWN_KEY = 40;
+
+            const keyPressed = event.keyCode;
+            
+            if (keyPressed === LEFT_KEY && dx !== gridSize) {
+                dx = -gridSize;
+                dy = 0;
+            }
+            if (keyPressed === UP_KEY && dy !== gridSize) {
+                dx = 0;
+                dy = -gridSize;
+            }
+            if (keyPressed === RIGHT_KEY && dx !== -gridSize) {
+                dx = gridSize;
+                dy = 0;
+            }
+            if (keyPressed === DOWN_KEY && dy !== -gridSize) {
+                dx = 0;
+                dy = gridSize;
+            }
+        }
+
+        // 開始遊戲
+        function startGame() {
+            initSnake();
+            generateFood();
+            score = 0;
+            scoreElement.textContent = `分數: 0`;
+            dx = gridSize;
+            dy = 0;
+            startBtn.disabled = true;
+            
+            // 遊戲循環
+            gameLoop = setInterval(gameUpdate, 100);
+        }
+
+        // 事件監聽
+        document.addEventListener('keydown', changeDirection);
+        startBtn.addEventListener('click', startGame);
+    </script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
